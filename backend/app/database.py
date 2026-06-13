@@ -51,6 +51,50 @@ def create_consultation(audio_path: str, transcript: str, note: dict[str, str]) 
     return row_to_consultation(row)
 
 
+def get_consultation(consultation_id: int) -> dict[str, Any] | None:
+    with get_connection() as conn:
+        row = conn.execute(
+            """
+            SELECT id, created_at, audio_path, transcript, generated_note_json
+            FROM consultations
+            WHERE id = ?
+            """,
+            (consultation_id,),
+        ).fetchone()
+    if row is None:
+        return None
+    return row_to_consultation(row)
+
+
+def update_consultation(
+    consultation_id: int,
+    audio_path: str,
+    transcript: str,
+    note: dict[str, str],
+) -> dict[str, Any] | None:
+    note_json = json.dumps(note, ensure_ascii=False)
+    with get_connection() as conn:
+        conn.execute(
+            """
+            UPDATE consultations
+            SET audio_path = ?, transcript = ?, generated_note_json = ?
+            WHERE id = ?
+            """,
+            (audio_path, transcript, note_json, consultation_id),
+        )
+        row = conn.execute(
+            """
+            SELECT id, created_at, audio_path, transcript, generated_note_json
+            FROM consultations
+            WHERE id = ?
+            """,
+            (consultation_id,),
+        ).fetchone()
+    if row is None:
+        return None
+    return row_to_consultation(row)
+
+
 def list_consultations() -> list[dict[str, Any]]:
     with get_connection() as conn:
         rows = conn.execute(

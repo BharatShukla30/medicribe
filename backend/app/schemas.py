@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-NOTE_FIELDS = (
+DEFAULT_HMS_FIELDS = (
     "chief_complaint",
     "history",
     "examination",
@@ -11,20 +11,19 @@ NOTE_FIELDS = (
     "follow_up",
 )
 
+ASSIST_FIELDS = (
+    "suggested_doctor_questions",
+    "recommended_tests",
+    "clinical_disclosure",
+)
 
-class ClinicalNote(BaseModel):
-    chief_complaint: str = ""
-    history: str = ""
-    examination: str = ""
-    diagnosis: str = ""
-    investigations: str = ""
-    treatment: str = ""
-    follow_up: str = ""
+NOTE_FIELDS = DEFAULT_HMS_FIELDS + ASSIST_FIELDS
 
 
 class ProcessAudioResponse(BaseModel):
     transcript: str
-    note: ClinicalNote
+    note: dict[str, str]
+    consultation_id: int | None = None
 
 
 class Consultation(BaseModel):
@@ -32,5 +31,5 @@ class Consultation(BaseModel):
     created_at: str
     audio_path: str
     transcript: str
-    note: ClinicalNote
-    generated_note_json: ClinicalNote
+    note: dict[str, str]
+    generated_note_json: dict[str, str]
